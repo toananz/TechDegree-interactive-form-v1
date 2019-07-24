@@ -1,497 +1,279 @@
 document.addEventListener("DOMContentLoaded",(e)=>{
+    //-------- Set Global Var ---------//
+    const $form = $("form");
+    const $inpName = $("#name");
+    const $inpEmail = $("#mail");
+    const fieldBasicInfo =$("#basic-info");
+    const $selJobRole = $("#title");
+    const $inpOtherRole = $("#other-title");
+    const $selColor = $("#colors-js-puns");
+    const $selDesign = $("#design");
+    const $activities = $("#activities")
+    const $activitiesInp = $("#activities label")
+    const $total = $("#total");
+    const $payment = $("#payment");
+    const $paymentOpt = $("#payment option");
+    const $cclDiv = $("#credit-card");
+    const $cclNum = $("#cc-num");
+    const $cclZip = $("#zip");
+    const $cclCVV = $("#cvv");
+    const $payPalDiv = $("#paypal");
+    const $bitcoinDiv = $("#bitcoin");
+    const $btnSubmit = $("#sumbit");
 
-    const form = document.querySelector('form');
-    const inputName = document.getElementById('name');
-    const inputMail = document.getElementById('mail');
-    const selJob = document.getElementById('title')
-    const fieldBasicInfo = document.getElementById('basic-info');
-    const fieldActivities = document.getElementById('activities');
-    const selPay = document.getElementById('payment');
-    const selDesign = document.getElementById('design');
-    const selColor = document.getElementById('color');
-    const selDivColor = document.getElementById('colors-js-puns');
-    const activities = document.querySelector('#activities');
-    const activitiesList = document.querySelectorAll('#activities > label');
-    const textCost = document.getElementById('total');
-    const btnSubmit = document.getElementById('sumbit');
-    const inputOtherJobs = document.getElementById('other-title');
-    const numCC = document.getElementById('cc-num');
-    const numZip = document.getElementById('zip');
-    const numCVV = document.getElementById('cvv');
-    const divCreditCard = document.getElementById('divCreditCard');
     const mailString = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
     const letters = /^[a-z ,.'-]+$/i;
+    const ccRegex = /^\d{13,16}$/;
+    const zipRegex = /^\d{5}$/;
+    const cvvRegex = /^\d{3}$/;
+
     
-    
-    let validName = false;
-    let validEmail = false;
-    let validActivities = 0;
-    let validPayment = false;
-    let validJobOther = false;
-    
+    const validBasicInfo = {
+        validName: false,
+        validEmail: false,
+        validActivities: false,
+    };
+
+    const validSelection = {
+        validPayment: false,
+        validJobOther: false
+    };
+
     let validCCNum = false;
     let validCCZip = false;
     let validCCCVV = false;
-    
-    const selPayment = document.getElementById('payment');
-    const paymentDivs = [divCreditcard = document.getElementById('credit-card'),
-                        divPay = document.getElementById('paypal'),
-                        divBitCoin = document.getElementById('bitcoin')
-                        ];
-    
-    let totalCost = 0;
-    let totalCount = 0;
-    
-    //------------ Global functions -------------//
-    
-    // Switch payment views
-    function switchPayment(sel) {
-      for (var i = 0; i < paymentDivs.length; i++) {
-        paymentDivs[i].style.display='none';
-      }
-      switch (sel) {
-        case 'credit card':
-          paymentDivs[0].style.display='';
-          break;
-        default:
-        console.log('meh');
-          break;
-      }
-    }
-    
-    // Check duplicates
-    function checkDuplicates(target){
-      let parent = target.parentNode;
-      let current = parent.getAttribute('value');
-      if (current !=0) {
-        if (target.checked) {
-          for (var i = 1; i < activitiesList.length; i++) {
-            if (parent.children[1].textContent == activitiesList[i].children[1].textContent && current != i) {
-              activitiesList[i].style.color = 'rgba(0, 0, 0, 0.23)';
-              activitiesList[i].children[0].disabled = true;
-            }
-          }
-    
-        }
-        if (target.checked == false) {
-          for (var i = 1; i < activitiesList.length; i++) {
-            if (parent.children[1].textContent == activitiesList[i].children[1].textContent && current != i) {
-              activitiesList[i].style.color = '';
-              activitiesList[i].children[0].disabled = false;
-            }
-          }
-    
-        }
-      }
-    }
-    
-    
-    // Add total
-    function addTotal (target){
-    
-        if (target.checked) {
-          totalCount++;
-          textCost.style.display ='';
-          totalCost += parseInt(target.value);
-          textCost.children[0].textContent = "$"+totalCost;
-    
-        }
-        if (target.checked == false) {
-          totalCount--;
-          totalCost -= parseInt(target.value);
-          textCost.children[0].textContent = "$"+totalCost;
-    
-        }
-        hideTotal();
-    
-    }
-    
-    
-    //Validate activities
-    
-    function validateActivities(){
-      //console.log(fieldActivities.children[1].textContent);
-      if (fieldActivities.children[1].textContent !== 'Must select at least one activity.') {
-        let li = createValidationText('Must select at least one activity.');
-        let parent = fieldActivities;
-        let child = parent.appendChild(li);
-        parent.insertBefore(child,parent.children[1]);
-      }
-      if (totalCount>0) {
-        fieldActivities.removeChild(fieldActivities.children[1])
-      }
-    }
-    
-    
-    // Add positioning to activities
-    for (var i = 0; i < activitiesList.length; i++) {
-      activitiesList[i].setAttribute('value',i);
-    }
-    
-    
-    // Hide elements
-    function hideTotal(){
-      if (totalCount == 0){
-        textCost.style.display ='none';
-      }
-    }
-    
-    
-    // Switch index
-    function swithPayment(){
-      for (var i = 0; i < paymentDivs.length; i++) {
-        paymentDivs[i].style.display = 'none';
-      }
-      let current = selPayment.options[selPayment.selectedIndex].value;
-      for (var i = 1; i < selPayment.length; i++) {
-        let key = selPayment.options[i].value;
-        if (current==key) {
-          paymentDivs[i-1].style.display = '';
-        }
-      }
-    }
-    
-    
-    
-    //------------ Init -------------//
-    
-    // -> Hide stuff
-    inputOtherJobs.style.display = 'none';
-    selDivColor.style.display = 'none';
-    textCost.style.display = 'none';
-    selPayment.selectedIndex = 1;
-    switchPayment('credit card');
-    
-    // -> Focus on intut
-    inputName.setAttribute('autofocus','');
-    
-    
-    //------------ Dom manipumation -------------//
-    
+
+
+    //-------- Global funcation ---------//
+
+    //Hide element
+    const hideElement = (target)=>{
+        $(target).hide();
+        //console.log(target);
+    };
+
+    //Show element
+    const showElement = (target)=>{
+        target.show();
+    };
+
     // Reset input color
     function resetInput(target){
-      if (target.nextSibling.className == 'validation-text') {
+        if (target.nextSibling.className == 'validation-text') {
         target.style.border = '';
         target.parentNode.removeChild(target.nextSibling);
-      }
-    }
-    
-    // Create validation text
-    function createValidationText(content) {
-      let li = document.createElement('p');
-      li.textContent = content;
-      li.setAttribute('class','validation-text');
-      return li;
-    }
-    
-    
-    
-    //------------ Inline validation -------------//
-    
-    // Velidate name
-    function validateName(target){
-      let value = target.value;
-      if(value.match(letters)){
-          resetInput(target);
-          validName = true;
-        } else{
-          validName = false;
-          resetInput(target);
-          target.style.border = '1px solid rgb(204, 95, 66)';
-          if (value=="") {
-            let vText = createValidationText('Name is required');
-            let p = fieldBasicInfo.appendChild(vText);
-            fieldBasicInfo.insertBefore(p,inputName.nextSibling);
-            return false;
-          } else {
-             let vText = createValidationText('Please enter valid name, must contain letter only.');
-             let p = fieldBasicInfo.appendChild(vText);
-             fieldBasicInfo.insertBefore(p,inputName.nextSibling);
-             return false;
-           }
         }
     }
-    
-    
-    // validateEmail
-    function validateEmail(target){
-      let value = target.value;
-      if(value.match(mailString)){
-              resetInput(target);
-              validEmail = true;
-            } else {
-              resetInput(target);
-              target.style.border = '1px solid rgb(204, 95, 66)';
-    
-              if (value=="") {
-                let vText = createValidationText('Required field');
-                let p = fieldBasicInfo.appendChild(vText);
-                fieldBasicInfo.insertBefore(p,inputMail.nextSibling);
-                validEmail = false;
-              } else {
-                 let vText = createValidationText('Please enter valid email eg. jon@snow.com');
-                 let p = fieldBasicInfo.appendChild(vText);
-                 fieldBasicInfo.insertBefore(p,inputMail.nextSibling);
-                 validEmail = false;
-               }
+
+
+    //--------Show/hide other job role---------//
+    $($selJobRole).on('change',function(event){
+        let $selectOpt = $(this).find("option:selected").val();
+        //console.log($selectOpt);
+        if($selectOpt === 'other'){
+            showElement($inpOtherRole);
+            
+        }else{
+            hideElement($inpOtherRole);
+        }
+    });
+
+    //--------Show/hide Tshirt Colors---------//
+    const $colorArr_pun = $('#color option:contains(Pun)');
+    const $colorArr_lov = $('#color option:contains(JS shirt only)');
+
+    $($selDesign).on('change',function(event){
+        let $selectOpt = $(this).find("option:selected").val();
+        if($selectOpt === 'js_puns'){
+            //console.log($selectOpt);
+            showElement($selColor);
+        
+            for (let index = 0; index < $colorArr_pun.length; index++) {
+                showElement($colorArr_pun.eq(index));
             }
-    }
-    
-    // Validae Job
-    function validateJob(target){
-      if(target.value == "other"){
-        inputOtherJobs.style.display = '';
-      }else if (target.value !== "other" && document.getElementById('other-title') !== null) {
-        inputOtherJobs.style.display = 'none';
-      }
-    }
-    
-    
-    //Show select colors
-    function showColors(){
-      for (var i = 0; i < selColor.length; i++) {
-          selColor[i].style.display ='';
-      }
-    }
-    
-    // Color Filter
-    const filterColor = {
-    
-      js_puns: (key)=>{
-        showColors();
-        for (var i = 0; i < selColor.length; i++) {
-          selDivColor.style.display = '';
-          if (selColor[i].getAttribute('name') !== 'js_pun' ) {
-            selColor[i].style.display ='none';
-          }
+            for (let index = 0; index < $colorArr_lov.length; index++) {
+                hideElement($colorArr_lov.eq(index));
+            }
+
+        }else if($selectOpt ==='heart_js'){
+            for (let index = 0; index < $colorArr_pun.length; index++) {
+                hideElement($colorArr_pun.eq(index));
+            }
+            for (let index = 0; index < $colorArr_lov.length; index++) {
+                showElement($colorArr_lov.eq(index));
+            }
         }
-      },
-      heart_js: ()=>{
-        showColors();
-        selDivColor.style.display = '';
-        for (var i = 0; i < selColor.length; i++) {
-          if (selColor[i].getAttribute('name') !== 'i_love_js' ) {
-            selColor[i].style.display ='none';
-          }
+        else{
+            hideElement($selColor);
         }
+    });
+
+
+    //--------Activities Selection---------//
+    let checkCount = 0;
+    let totalPrice = 0;
+
+    //Actities listener
+    $activities.on('change',function(event){
+        
+        let otherSibs = $(event.target).parent().siblings('label');
+        let eventTime = $(event.target).parent().find('.time').text();
+        let price = parseInt($(event.target).parent().find('.price').text());
+        if($(event.target).is(":checked")){
+            checkCount++;
+            totalPrice += price;    
+            for (let index = 0; index < otherSibs.length; index++) {
+                if(eventTime === $(otherSibs).eq(index).find(".time").text()){
+                    //console.log('match');
+                    $(otherSibs).eq(index).find('input').attr("disabled", true)
+                    $(otherSibs).eq(index).css({ 'color': 'rgba(0, 0, 0, 0.23)'});
+                }
+            }
+        }else{
+            totalPrice -= price;
+            for (let index = 0; index < otherSibs.length; index++) {
+                if(eventTime === $(otherSibs).eq(index).find(".time").text()){
+                    $(otherSibs).eq(index).find('input').attr("disabled", false)
+                    $(otherSibs).eq(index).css({ 'color': '#000'});
+                }
+            }
+            checkCount--;
+        }
+        $total.html("Total: $"+ totalPrice);
+        if(checkCount>0){
+            showElement($total);
+        }else{
+            hideElement($total);
+        }
+
+        if (checkCount>0){
+            validBasicInfo.validActivities = true;
+        } else{
+            validBasicInfo.validActivities = false;
+        }
+    });
+
+
+    //-------- Payment options---------//
+    $payment.on('change',function(event){
+        let selectVal = $(event.target).val();
+        let elementVal = "";
+        hideElement($payPalDiv);
+        hideElement($bitcoinDiv)
+        hideElement($cclDiv);
+        if (selectVal==='credit_card'){
+            elementVal = $cclDiv;
+        } else if (selectVal==='paypal'){
+            elementVal = $payPalDiv;
+        } else if (selectVal==='bitcoin'){
+            elementVal = $bitcoinDiv;
+        } else{
+            elementVal = '';
+        }
+        showElement(elementVal);
+    });
     
-      },
-      default: ()=>{
-        showColors();
-      }
+
+     //-------- Inline validation--------//
+
+    //Display error functions
+     const displayError = {
+        text:   (target, message)=>{
+                $(target).attr('class','inptxtError');
+                $(target).after(`<p class="error-text">${message}</p>`);
+                }
+                
+    
     };
-    
-    // Remove CC text
-    function removeText(target){
-      if ( target.style.borderColor == 'rgb(204, 95, 66)') {
-        target.style.border = '';
-        target.parentNode.removeChild(target.nextSibling);
-      }
+
+    //Reset errors states functions
+    const resetTextError = {
+        text:   (target)=>{
+                 $(target).attr('class','');  
+                } 
     };
+       
+   //Text fiel validation function
+   const textValidation = (target,message,regex,id)=>{
+        let inpVal = $(target).val(); 
+        if(!regex.test(inpVal)){
+            if($(target).attr('class') !== 'inptxtError'){
+                displayError.text(target, message)
+            }
+            validBasicInfo[id] = false;
+            
+        } else{
+            validBasicInfo[id] = true;
+            if($(target).next().attr('class')==='error-text'){
+                resetTextError.text(target);
+                $(target).next().remove();    
+            }
     
-    // validare CC num
-    function validateCCNum(target){
-      let parent = target.parentNode;
-      let child = target;
-      if (target.value.length >= 13 && target.value.length <=16) {
-        removeText(target);
-        validCCNum = true;
-    
-      } else {
-        validCCNum = false;
-        if (target.value.length == 0) {
-          removeText(target);
-          let li = createValidationText('Required field');
-          let p = parent.appendChild(li);
-          parent.insertBefore(child,p);
-        } else {
-          validPayment = false;
-          removeText(target);
-          let li = createValidationText('Enter valid credit card number, 13-15 characters.');
-          let p = parent.appendChild(li);
-          parent.insertBefore(child,p);
         }
-        target.style.border = '1px solid rgb(204, 95, 66)';
-      }
-      if (validCCNum && validCCZip && validCCCVV) {
-        validPayment = true;
-      }
-    }
     
-    
-    // Validate cc Zip
-    function validateCCZip(target){
-      let parent = target.parentNode;
-      let child = target;
-      if (target.value.length == 5) {
-        validCCZip = true;
-        removeText(target);
-      } else {
-        validCCZip = false;
-        if (target.value.length == 0) {
-          removeText(target);
-          let li = createValidationText('Required field');
-          let p = parent.appendChild(li);
-          parent.insertBefore(child,p);
-        } else {
-          validPayment = false;
-          removeText(target);
-          let li = createValidationText('Enter valid Zip code.');
-          let p = parent.appendChild(li);
-          parent.insertBefore(child,p);
+   };
+
+
+   //-------- Post validation--------//
+   const validateForm = ()=>{
+    //
+        if(validBasicInfo.validName && validBasicInfo.validEmail && validBasicInfo.validActivities){
+            console.log("Valid");
+        } else{
+            console.log("invalid");
+            
         }
-        target.style.border = '1px solid rgb(204, 95, 66)';
-      }
-      if (validCCNum && validCCZip && validCCCVV) {
-        validPayment = true;
-      }
-    }
-    
-    
-    // Validate CVV
-    function validateCCCVV(target){
-      let parent = target.parentNode;
-      let child = target;
-      if (target.value.length === 3) {
-        validCCCVV = true;
-        removeText(target);
-        return true;
-      } else {
-        validCCCVV = false;
-        if (target.value.length == 0) {
-          removeText(target);
-          let li = createValidationText('Required field');
-          let p = parent.appendChild(li);
-          parent.insertBefore(child,p);
-        } else {
-          validPayment = false;
-          removeText(target);
-          let li = createValidationText('Enter valid CVV.');
-          let p = parent.appendChild(li);
-          parent.insertBefore(child,p);
-        }
-        target.style.border = '1px solid rgb(204, 95, 66)';
-      }
-      if (validCCNum && validCCZip && validCCCVV) {
-        validPayment = true;
-      }
-    }
-    
-    // Validate payment info
-    selPay.addEventListener('change',(e)=>{
-    
-      let target=e.target.value;
-      let parent = selPay.parentNode;
-      let child = selPay.parentNode.children[2];
-      let removeValid = ()=> {
-        if (e.target.previousSibling.className == 'validation-text') {
-          e.target.parentNode.removeChild(e.target.previousSibling);
-        }
-      }
-      if (target=='select_method') {
-          validPayment = false;
-          let li = createValidationText('Select payment method.');
-          let p = parent.appendChild(li);
-          parent.insertBefore(p,child);
-    
-      } else if (target=='credit card') {
-          removeValid();
-          validPayment = false;
-          console.log(validPayment);
-      } else if (target=='paypal') {
-          removeValid();
-          validPayment = true;
-          console.log(validPayment);
-      } else if (target=='bitcoin') {
-          removeValid();
-          validPayment = true;
-      }
-    
+   };
+
+
+    //Name validation
+    $inpName.on("focusout",(e)=>{
+        textValidation(e.target,'Valid name required',letters, 'validName');
     });
-    
-    
-    //------------ Post validation -------------//
-    function validateForm(){
-      window.scrollTo(0,top);
-    
-      if (validName && validEmail && validActivities > 0 && validPayment) {
-        console.log(validName, validEmail, validActivities, validPayment);
-      }else {
-        event.preventDefault();
-        console.log(validName, validEmail, validActivities, validPayment);
-        let parent = form;
-        let li = createValidationText('Please correct the invalid field below');
-        let child = form.appendChild(li);
-        if (form.children[0].className=='validation-text') {
-          console.log(form.children[0].className);
-          form.removeChild(form.children[0]);
-        }
-        form.insertBefore(child,parent.firstChild);
-        validateName(inputName);
-        validateEmail(inputMail);
-        validateCCNum(numCC);
-        validateCCZip(numZip);
-        validateCCCVV(numCVV);
-        validateActivities();
-      }
-    }
-    
-    
-    //------------ Event Listeners -------------//
-    
-    inputName.addEventListener('focusout', (e)=>{
-      validateName(e.target);
+
+    //Email validation
+    $inpEmail.on("focusout",(e)=>{
+        textValidation(e.target,'Valid email required',mailString, 'validEmail');
     });
-    
-    inputMail.addEventListener('focusout',(e)=>{
-      validateEmail(e.target);
+
+    //CC number validation
+    $cclNum.on("focusout",(e)=>{
+        textValidation(e.target,'Valid Number required (13-16 digits)',ccRegex, 'validCCNum');
     });
-    
-    selJob.addEventListener('change',(e)=>{
-      validateJob(e.target);
+
+    //Zip number validation
+    $cclZip.on("focusout",(e)=>{
+        textValidation(e.target,'Valid Number required (5 digits)',zipRegex, 'validCCZip');
+    });    
+
+    //CVV number validation
+    $cclCVV.on("focusout",(e)=>{
+        textValidation(e.target,'Valid Number required (3 digits)',cvvRegex, 'validCCCVV');
+    });    
+
+
+
+
+
+    //-------- Initial load ---------//
+    $inpName.focus();
+    hideElement($inpOtherRole);
+    hideElement($selColor);
+    hideElement($total);
+    hideElement($payPalDiv);
+    hideElement($bitcoinDiv);
+    $paymentOpt.eq(0).attr('disabled', true);
+    $paymentOpt.eq(1).attr('selected', true);
+    $form.on('submit',(e)=>{
+        e.preventDefault();
+        validateForm();
     });
-    
-    selDesign.addEventListener('change',(e)=>{
-        console.log(e.target.value);
-        filterColor[e.target.value]();
-    });
-    
-    activities.addEventListener('change',(e)=>{
-      checkDuplicates(e.target);
-      addTotal(e.target);
-      validateActivities();
-    });
-    
-    selPayment.selectedIndex = 1;
-    selPayment.addEventListener('change',(e)=>{
-      swithPayment();
-    })
-    
-    numCC.addEventListener('focusout',(e)=>{
-      validateCCNum(numCC);
-    });
-    
-    numZip.addEventListener('focusout',(e)=>{
-      validateCCZip(numZip);
-    });
-    
-    numCVV.addEventListener('focusout',(e)=>{
-      validateCCCVV(numCVV);
-    });
-    
-    btnSubmit.addEventListener('click',()=>{
-      //event.preventDefault();
-      validateForm();
-    });
-    
-    fieldActivities.addEventListener('change',(e)=>{
-      if (e.target.checked) {
-        validActivities++;
-      } else {
-        validActivities--;
-      }
-    });
+
     
     
-    });
-    
+
+
+});
+
+
+
