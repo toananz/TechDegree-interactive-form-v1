@@ -56,11 +56,14 @@ document.addEventListener("DOMContentLoaded",(e)=>{
 
     // Reset input color
     function resetInput(target){
-        if (target.nextSibling.className == 'validation-text') {
+        if (target.nextSibling.className == 'error-text-text') {
         target.style.border = '';
         target.parentNode.removeChild(target.nextSibling);
         }
     }
+
+
+      
 
 
     //--------Show/hide other job role---------//
@@ -192,7 +195,12 @@ document.addEventListener("DOMContentLoaded",(e)=>{
         text:   (target, message)=>{
                 $(target).attr('class','inptxtError');
                 $(target).after(`<p class="error-text">${message}</p>`);
-                }
+                },
+        top:   (target, message)=>{
+            //$(target).attr('class','inptxtError');
+            $(target).prepend(`<p class="error-text">${message}</p>`);
+            },
+
                 
     
     };
@@ -235,12 +243,36 @@ document.addEventListener("DOMContentLoaded",(e)=>{
     };
 
    const validateForm = ()=>{
-        if(validTest()){
-            console.log("Valid");
-        } else{
-            console.log("invalid");
-            
+        window.scrollTo(0,top);
+            if($form.children().first().attr('class')!= 'error-text'){
+                displayError.top($form, "(!) Please correct the invalid field below")
+            }
+        
+        textValidation($inpName,'Valid name required',letters, 'validName');
+        textValidation($inpEmail,'Valid email required',mailString, 'validEmail');
+
+        //validate activities
+        if (!validBasicInfo.validActivities){
+            if($activities.children().first().attr('class')!= 'error-text'){
+                displayError.top($activities, "Please select one or more activities");
+            }
+        }else{
+            if($activities.children().first().attr('class') === 'error-text'){
+                $activities.children().first().remove();
+            }
         }
+
+        //Validate Payment
+        let selectVal = $payment.val();
+        if(selectVal==='credit_card'){
+            textValidation($cclNum,'Valid Number required (13-16 digits)',ccRegex, 'validCCNum');
+            textValidation($cclCVV,'Valid Number required (3 digits)',cvvRegex, 'validCCCVV');
+            textValidation($cclZip,'Valid Number required (5 digits)',zipRegex, 'validCCZip');
+        }
+
+        
+
+        
    };
 
 
@@ -283,7 +315,7 @@ document.addEventListener("DOMContentLoaded",(e)=>{
     $paymentOpt.eq(1).attr('selected', true);
     $form.on('submit',(e)=>{
         if(!validTest()){
-            console.log(validBasicInfo)
+            //console.log(validBasicInfo)
             e.preventDefault();
             validateForm();
         }
