@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded",(e)=>{
         validEmail: false,
         validActivities: false,
         validPayment: false,
+        validJobTitle: true,
         validCCNum: false,
         validCCZip: false,
         validCCCVV: false
