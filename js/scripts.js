@@ -32,17 +32,13 @@ document.addEventListener("DOMContentLoaded",(e)=>{
         validName: false,
         validEmail: false,
         validActivities: false,
-    };
-
-    const validSelection = {
         validPayment: false,
-        validJobOther: false
+        validCCNum: false,
+        validCCZip: false,
+        validCCCVV: false
     };
-
-    let validCCNum = false;
-    let validCCZip = false;
-    let validCCCVV = false;
-
+    
+    
 
     //-------- Global funcation ---------//
 
@@ -67,16 +63,26 @@ document.addEventListener("DOMContentLoaded",(e)=>{
 
 
     //--------Show/hide other job role---------//
-    $($selJobRole).on('change',function(event){
-        let $selectOpt = $(this).find("option:selected").val();
+    $selJobRole.on('change',function(e){
+        let $selectOpt = $(e.target).find("option:selected").val();
         //console.log($selectOpt);
         if($selectOpt === 'other'){
+            validBasicInfo.validJobTitle = false;
+            //console.log('other');
             showElement($inpOtherRole);
+            $inpOtherRole.on('focusout',(e)=>{
+                textValidation(e.target,'Job required',letters, 'validJobTitle');
+            });
+            
             
         }else{
             hideElement($inpOtherRole);
+            validBasicInfo.validJobTitle = true;
         }
     });
+
+
+
 
     //--------Show/hide Tshirt Colors---------//
     const $colorArr_pun = $('#color option:contains(Pun)');
@@ -163,11 +169,15 @@ document.addEventListener("DOMContentLoaded",(e)=>{
         hideElement($cclDiv);
         if (selectVal==='credit_card'){
             elementVal = $cclDiv;
+
         } else if (selectVal==='paypal'){
             elementVal = $payPalDiv;
+            validBasicInfo.validPayment = true;
         } else if (selectVal==='bitcoin'){
+            validBasicInfo.validPayment = true;
             elementVal = $bitcoinDiv;
         } else{
+            validBasicInfo.validPayment = false;
             elementVal = '';
         }
         showElement(elementVal);
@@ -215,9 +225,16 @@ document.addEventListener("DOMContentLoaded",(e)=>{
 
 
    //-------- Post validation--------//
+   let validTest = ()=>{
+       if(validBasicInfo.validName && validBasicInfo.validEmail && validBasicInfo.validJobTitle && validBasicInfo.validPayment && validBasicInfo.validActivities){
+        return true;
+       } else{
+        return false;
+       }
+    };
+
    const validateForm = ()=>{
-    //
-        if(validBasicInfo.validName && validBasicInfo.validEmail && validBasicInfo.validActivities){
+        if(validTest()){
             console.log("Valid");
         } else{
             console.log("invalid");
@@ -236,6 +253,8 @@ document.addEventListener("DOMContentLoaded",(e)=>{
         textValidation(e.target,'Valid email required',mailString, 'validEmail');
     });
 
+
+
     //CC number validation
     $cclNum.on("focusout",(e)=>{
         textValidation(e.target,'Valid Number required (13-16 digits)',ccRegex, 'validCCNum');
@@ -252,9 +271,6 @@ document.addEventListener("DOMContentLoaded",(e)=>{
     });    
 
 
-
-
-
     //-------- Initial load ---------//
     $inpName.focus();
     hideElement($inpOtherRole);
@@ -265,13 +281,13 @@ document.addEventListener("DOMContentLoaded",(e)=>{
     $paymentOpt.eq(0).attr('disabled', true);
     $paymentOpt.eq(1).attr('selected', true);
     $form.on('submit',(e)=>{
-        e.preventDefault();
-        validateForm();
+        if(!validTest()){
+            console.log(validBasicInfo)
+            e.preventDefault();
+            validateForm();
+        }
+        //validateForm();
     });
-
-    
-    
-
 
 });
 
